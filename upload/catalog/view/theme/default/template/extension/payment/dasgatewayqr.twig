@@ -1,0 +1,107 @@
+<script type="text/javascript">
+    $(document).ready(function () {
+        checkStatus('');
+        
+            $('#posme-qr').on('click', function () {
+                $('#qr-modal')
+                    .modal('show')
+                    .find('iframe').attr('src',$(this).data('url'));
+            });
+            
+            $('.btn-cancel').on('click', function () {
+                $('#qr-modal')
+                    .modal('hide');
+            });
+            
+            $(document).on('click','#poframe #initialView .btn-cancel',function(event) {
+                window.parent.location.href = $(this).attr("href");
+            });
+            
+          var iframe = document.getElementById("poframe");
+          
+          $('#poframe').on('load', function() {
+                var url = iframe.contentWindow.location;
+                let host = window.location.host;
+            
+                if (url.host === host){
+                        window.parent.location.href = url.href;
+                }
+          });
+            
+    });
+
+    function checkStatus(status) {
+        if (status === 'pending' || status === 'request_failed' || status === '') {
+            setTimeout(doAjax, 1000);
+        } else {
+            $.ajax({
+                    url: "{{ redirect_url }}&order_id={{ order_id }}",
+                    success: (response) => {
+                        window.setTimeout(function() {
+                            window.location.href = response;
+                        }, 3000);
+                    }
+            });
+        }
+    }  
+
+    function doAjax() {
+        $.ajax({
+            type: 'POST',
+            url: "{{ check_status_url }}",
+            data: {
+                order_id: {{ order_id }}
+            },
+        }).done(checkStatus);
+    }
+</script>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-md-10">
+            <div class="row">
+                <div class="col-xs-10">
+                    {#<legend>Powered by</legend>#}
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="col-md-6 summary">
+                 <div>
+                    {#<img src="{{ payment_option_img }}" alt="{{ text_payment_option }}" height="300" style="padding-left: 35%;"/>#}
+                </div>
+                <div>
+                    <p>We accept: </p>
+                    {% for cards in accepted_cards %}
+                        {% if cards == 'visa' %} <img src="catalog/view/theme/default/image/sme_creditcard_visa.png" height="30" alt="Visa"/>{% endif %}
+                        {% if cards == 'mastercard' %} <img src="catalog/view/theme/default/image/sme_creditcard_master.png" height="30" alt="MasterCard"/> {% endif %}
+                        {% if cards == 'diner' %} <img src="catalog/view/theme/default/image/sme_creditcard_diners.png" height="30" alt="Diners Club"/> {% endif %}
+                        {% if cards == 'jcb' %} <img src="catalog/view/theme/default/image/sme_creditcard_jcb.png" height="30" alt="JCB"/> {% endif %}
+                        {% if cards == 'amex' %} <img src="catalog/view/theme/default/image/sme_creditcard_amex.png" height="30" alt="AMEX"/> {% endif %} </label>
+                    {% endfor %}
+                </div>
+                
+               <p><strong>Click on the Confirm Order to proceed payment with Payment Options</strong></p>
+                
+                <div>
+                    <button id="posme-qr" data-url="{{ qr_url }}" class="btn btn-primary">Confirm Order</h3>
+                </div>
+            </div>
+            
+            <div class="modal fade" id="qr-modal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg" style="height: 100%;min-width: 100%;">
+                    <div class="modal-content" style="height: auto; min-height: 100%;">
+                        <div class="modal-body">
+                            <iframe id="poframe" style="width: 100%; height: 1000px"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    
+  
